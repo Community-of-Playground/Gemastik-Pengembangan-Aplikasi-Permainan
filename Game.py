@@ -5,7 +5,6 @@ from transformers import BertModel, BertTokenizer
 from time import sleep
 from abc import ABC
 
-
 class Analyzer(ABC):
   def __init__(
       self,
@@ -71,8 +70,6 @@ class Analyzer(ABC):
               return self.observations, self.reward, self.done, self.new_target
       elif self.done:
           return self.observations, self.reward, self.done ,self.new_target  
-    
-
     
   def get_similarity(self, embed1, embed2):
       return self.similarity_func(embed1, embed2)[0]

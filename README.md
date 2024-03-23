@@ -25,7 +25,3 @@ Final product can be seen using [Deployment code](https://github.com/FaresGh1997
 
 
 Skills developed: NLP | Model Deployment | streamlit | pandas | pytorch | numpy | model-finetuning | LLM | word-embeddings | Bert-based models | Transformers | HuggingFace | genism | nltk | python.
-
-
-
-

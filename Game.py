@@ -52,8 +52,6 @@ class Analyzer(ABC):
 
       return avg_embed
   
-    
-  
   def act (self, word):
       if not self.done:
           if word not in self.action_space:

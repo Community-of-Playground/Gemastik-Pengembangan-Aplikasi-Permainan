@@ -12,6 +12,7 @@ import os
 
 nama = st.text_input("Masukkan nama Anda:")
 
+
 def formCreation():
     st.header('Gemastik Pengembangan Aplikasi Permainan')
     #languages= ( 'English', 'русский', 'العربية')
@@ -24,23 +25,84 @@ def chooseform(languages):
         'please select your language',
         languages)
     
-    if (languageOption== 'English'):
+    if (languageOption== 'العربية'):
+        directory = os.getcwd()
+        guessesPath= directory + "\\guesses.txt"
+        ArabicContexto = createArabicEnviroment()
+        ArabicForm(guessesPath,ArabicContexto)
+        return 
+    
+    elif (languageOption== 'English'):
         directory = os.getcwd()
         guessesPath= directory + "\\guesses.txt"
         englishContexto= createEnglishEnvironment()
         EnglishForm(guessesPath, englishContexto)
         return
+    
+    elif (languageOption== 'Indonesia'):
+        directory = os.getcwd()
+        guessesPath= directory + "\\guesses.txt"
+        englishContexto= createEnglishEnvironment()
+        EnglishForm(guessesPath, englishContexto)
+        return
+    
     else:
-        # Tidak ada opsi lain selain English, jadi kita tidak perlu menangani kasus lain
-        pass
+
+        directory = os.getcwd()
+        guessesPath= directory + "\\guesses.txt"
+        RussianContexto = createRussianEnviroment()
+        RussianForm(guessesPath,RussianContexto)
+        return
 
 #Forms
+def ArabicForm(guessesPath,ArabicContexto):
+    Arabiccontainer = st.container()
+    guess= Arabiccontainer.text_input("رجاء: أدخل كلمة للتخمين", "type a word")
+    guess= guess.strip()
+    
+    if guess == "type a word":
+        Arabiccontainer.info(""" **كيفية اللعب:**
+        لديك عدد غير محدود من التخمينات لتتمكن من العثور على الكلمة السرية:
+        تم ترتيب الكلمات عن طريق خوارزمية ذكاء صنعي وفقاً لمدى التقارب بين الكلمة السرية والتخمينات.
+        بعد اختيارك للتخمين سترى مدى قرب التخمين من الكلمة السرية، حيث تمتلك الكلمة السرية القيمة 1 وتقل هذه القيمة كلما كان التخمين بعيد عن الكلمة السرية.""")
+
+        f = open(guessesPath, "w")
+        f.write("Words , Similarities \n")
+        f.close() 
+    
+    else:
+        
+        arabicContextoDone=False
+        _ ,arabicContextoSim, arabicContextoDone, new_target_arabic= checkSimilarity(guess, ArabicContexto)         
+        guessWrite= guess+  " , " + str(arabicContextoSim*1)      
+
+    
+        if not arabicContextoDone:
+            if arabicContextoSim== (-1000):
+                st.write(" الكلمة "+ guess+" غير موجودة")
+                show(arabicContextoDone, guessesPath, guessWrite=None)
+            else:
+                show(arabicContextoDone, guessesPath, guessWrite)
+            if st.button('Give Up'):
+                st.write(ArabicContexto.giveup())            
+        else:
+            st.write("**مبارك: لقد استطعت تخمين الكلمة الصحيحة**")
+            st.balloons()
+            setNewTarget("Arabic", new_target_arabic)
+            show(arabicContextoDone, guessesPath, guessWrite)
+            f = open(guessesPath, "w")
+            f.write("Words , Similarities \n")
+            f.close() 
+    
+    return 
+
 def EnglishForm(guessesPath, englishContexto):
     Englishcontainer = st.container()
 
     guess= Englishcontainer.text_input("Please enter your guess:", "type a word")
     guess= guess.strip()
-
+    #guess= "agricultural"
+    
     if guess == "type a word":
         Englishcontainer.info("""**how to play:**  
         Find the secret word. You have unlimited guesses.  
@@ -56,7 +118,7 @@ def EnglishForm(guessesPath, englishContexto):
         englishContextoDone=False
         _ ,englishContextoSimilarity, englishContextoDone, new_target_English= checkSimilarity(guess, englishContexto)
         if type(englishContextoSimilarity) != int:
-            guessWrite= guess+ " , " + str(englishContextoSimilarity*1)
+            guessWrite= guess+  " , " + str(englishContextoSimilarity*1)
     
         if not englishContextoDone:
             if englishContextoSimilarity== (-1000):
@@ -106,7 +168,6 @@ def show(englishContextoDone, guessesPath, guessWrite):
         
 
 #environment functions
-
 def setNewTarget(language, new_taregt):
     directory = os.getcwd()
     targetPath = directory +"\\"+language+"Target.txt"
@@ -120,9 +181,21 @@ def checkSimilarity(guess , contexto):
         contexto.reward = contexto.reward.item()
     return contexto.observations, contexto.reward, contexto.done, contexto.new_target
 
+#####Indo########
+def createEnglishEnvironment():
+    bert_model_name= "bert-base-multilingual-cased"
+    directory= os.getcwd()
+    wordsPath= directory + "\\indo_word.txt"
+    available_words=[line.strip() for line in open(wordsPath, 'r')]
+    targetPath= directory + "\\EnglishTarget.txt"
+    targetFile = open(targetPath, "r")
+    target = targetFile.read()
+    targetFile.close()
+    print (target)    
+    embed_calc = Analyzer(similarity_func=torch.nn.CosineSimilarity(),bert_version= bert_model_name,available_words = available_words,target= target)
+    return embed_calc
+
 #####English########
-
-
 def createEnglishEnvironment():
     bert_model_name= "bert-base-multilingual-cased"
     directory= os.getcwd()
@@ -151,23 +224,6 @@ def createArabicEnviroment():
     print (target)   
     embed_calc = Analyzer(similarity_func=torch.nn.CosineSimilarity(),bert_version= bert_model_name,available_words = available_words,target= target)
     return embed_calc
-
-
-
-####### Russian ########
-def createRussianEnviroment():
-    bert_model_name = 'DeepPavlov/rubert-base-cased'
-    directory = os.getcwd()
-    wordsPath = directory + "\\russian_nouns.txt"
-    available_words=[line.strip() for line in open(wordsPath, 'r',encoding="utf8")]
-    targetPath= directory + "\\RussianTarget.txt"
-    targetFile = open(targetPath, "r",encoding="utf8")
-    target = targetFile.read()
-    targetFile.close()
-    print (target)    
-    embed_calc = Analyzer(similarity_func=torch.nn.CosineSimilarity(),bert_version= bert_model_name,available_words = available_words,target= target)
-    return embed_calc
-
 
 #main code
 

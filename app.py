@@ -7,7 +7,9 @@ import torch.nn.functional as f
 from transformers import BertModel, BertTokenizer
 from time import sleep
 import os
-
+from dotenv import load_dotenv
+import google.generativeai as genai
+load_dotenv()
 #forms functions
 
 nama = st.text_input("Masukkan nama Anda:")
@@ -43,6 +45,40 @@ def chooseform(languages):
         indoContexto= createIndoEnvironment()
         IndoForm(guessesPath, indoContexto)
         return
+
+genai.configure(api_key="AIzaSyDiEvJyv_j5ZLMDt6E6lSM3ytQTqvWEpUE")
+
+def generate_gemini_content(tulisan, prompt):
+    model = genai.GenerativeModel("gemini-pro")
+    response = model.generate_content(prompt + tulisan)
+    return response.text
+
+with open("EnglishTarget.txt", "r") as file:
+    text = file.read()
+
+hint1 = "Berikan hint untuk tebakan kata dari kata di bawah ini"
+hint2 = 'Berikan ciri-ciri untuk tebakan kata dari kata di bawah ini'
+hint3 = "Berikan penjelasan terkait kata di bawah ini, tanpa menyebutkan katanya"
+hint_index = 0
+hints = [hint1, hint2, hint3]
+
+st.title("Hint")
+
+def get_hint():
+    global hint_index
+    hint_index += 1
+    return hints[hint_index - 1]
+
+if st.button("Hint"):
+    if hint_index < len(hints):
+        hint = get_hint()
+        st.markdown("Hint: " + hint)
+    else:
+        st.write("Semua hint telah diberikan.")
+        
+if st.button("Hint"):
+    hint = generate_gemini_content(text, hint1)
+    st.markdown("Hint: " + hint)
 
 #Forms
 def ArabicForm(guessesPath,ArabicContexto):
@@ -170,7 +206,6 @@ def IndoForm(guessesPath, englishContexto):
                 
     return 
 
-
 def color(x):
     cold= 0
     worm= 0.65
@@ -183,8 +218,7 @@ def color(x):
         return ['background-color : #Ea7051']*len(x)
     elif amount > hot:
         return ['background-color : #73f181']*len(x)
- 
-    
+
 def show(englishContextoDone, guessesPath, guessWrite):
     if guessWrite != None:
 
@@ -196,8 +230,7 @@ def show(englishContextoDone, guessesPath, guessWrite):
     pdguessed = pdguessed.drop_duplicates()
     sortedGuesses=pdguessed.sort_values(by=[pdguessed.keys()[1]], ascending=False) 
     st.dataframe(sortedGuesses.style.apply(color, axis=1), use_container_width=True)
-        
-
+       
 #environment functions
 def setNewTarget(language, new_taregt):
     directory = os.getcwd()

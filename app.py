@@ -75,10 +75,6 @@ if st.button("Hint"):
         st.markdown("Hint: " + hint)
     else:
         st.write("Semua hint telah diberikan.")
-        
-if st.button("Hint"):
-    hint = generate_gemini_content(text, hint1)
-    st.markdown("Hint: " + hint)
 
 #Forms
 def ArabicForm(guessesPath,ArabicContexto):
@@ -218,19 +214,18 @@ def color(x):
         return ['background-color : #Ea7051']*len(x)
     elif amount > hot:
         return ['background-color : #73f181']*len(x)
-
 def show(englishContextoDone, guessesPath, guessWrite):
-    if guessWrite != None:
+    if guessWrite is not None:
+        with open(guessesPath, "a", encoding="utf-8") as f:
+            f.write(guessWrite + "\n")
 
-        f = open(guessesPath, "a",encoding="utf-8")
-        f.write(guessWrite+ "\n")
-        f.close() 
-
-    pdguessed= pd.read_csv(guessesPath, sep=",", header=0)
+    pdguessed = pd.read_csv(guessesPath, sep=",", header=0)
     pdguessed = pdguessed.drop_duplicates()
-    sortedGuesses=pdguessed.sort_values(by=[pdguessed.keys()[1]], ascending=False) 
-    st.dataframe(sortedGuesses.style.apply(color, axis=1), use_container_width=True)
-       
+    sortedGuesses = pdguessed.sort_values(by=[pdguessed.keys()[1]], ascending=False)
+    
+    # Display the DataFrame as a simple table without the index
+    st.table(sortedGuesses)
+
 #environment functions
 def setNewTarget(language, new_taregt):
     directory = os.getcwd()

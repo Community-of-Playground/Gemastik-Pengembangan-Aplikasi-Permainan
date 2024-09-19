@@ -1,5 +1,5 @@
-# Contexto_3lang
-implementation guess the word game for three different Languages (Arabic, English and Indonesian).
+# Context_Lang_Game
+implementation guess the word game for three Indonesian Languages
 
 #### Problem description:
 Contexto is word-based game in which players have to guess a secret word within an unlimited number of guesses, 
